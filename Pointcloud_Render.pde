@@ -12,17 +12,17 @@ float deg = 15;
 
 int inputWidth = 640;
 int inputHeight = 480;
-int numFrames = 1;
-int writeNumStart = 3267;
-int readNumStart = 3267;
+int numFrames = 20;
+int writeNumStart = 1;
+int readNumStart = 1;
 int currentFrame = 0;
-int fps = 12;
-String fileDir = "frames";
-String fileName = "write_";
-String fileType = "tga";
-String saveDir = "render";
-String saveName = "render_"+fileName;
-String saveType = "png";
+int fps = 60;
+String readFilePath = "frames";
+String readFileName = "shot1_";
+String readFileType = "tga";
+String writeFilePath = "render";
+String writeFileName = "render_"+readFileName;
+String writeFileType = "png";
 
 
 import peasy.*;
@@ -57,7 +57,7 @@ PeasyCam cam;
 
 float[][] gray = new float[inputHeight][inputWidth];
 
-PImage[] frames = new PImage[numFrames];
+PImage frame;
 
 static final int gray(color value) { 
   return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);  
@@ -69,15 +69,13 @@ void setup() {
   smooth();
   cam = new PeasyCam(this, width);
   //initKinect();
-  for(int i=0;i<numFrames;i++){
-      frames[i] = loadImage(fileDir + "/" + fileName + (i+readNumStart) +"."+fileType);
-      println(fileName + (i+readNumStart) +"."+fileType+ " loaded");  
-}
   stroke(255);
   
 }
 
 void draw () {
+  frame = loadImage(readFilePath + "/" + readFileName + (currentFrame+readNumStart) +"."+readFileType);
+  println(readFileName + (currentFrame+readNumStart) +"."+readFileType+ " loaded");  
   background(0);
   
   if (recordObj == true) {
@@ -93,7 +91,7 @@ void draw () {
     for (int x = 0; x < inputWidth; x++) {
        // FIXME: this loses Z-resolution about tenfold ...
        //       -> should grab the real distance instead...
-       color argb = frames[currentFrame].pixels[y*width+x];
+       color argb = frame.pixels[y*width+x];
        gray[y][x] = gray(argb);
     }
   }
@@ -113,8 +111,8 @@ void draw () {
   }
   
     if(recordFrame==true){
-saveFrame("render/"+ saveName+(currentFrame+writeNumStart)+"."+saveType);
-println(saveName+(currentFrame+writeNumStart)+"."+saveType+" saved");
+saveFrame("render/"+ writeFileName+(currentFrame+writeNumStart)+"."+writeFileType);
+println(writeFileName+(currentFrame+writeNumStart)+"."+writeFileType+" saved");
 }
 
 if(currentFrame<numFrames-1){
