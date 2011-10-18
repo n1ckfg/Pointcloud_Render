@@ -1,3 +1,4 @@
+//github sync test
 /*
 //--Kinect sectup
 import org.openkinect.*;
