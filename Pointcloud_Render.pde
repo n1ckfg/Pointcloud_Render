@@ -1,135 +1,158 @@
 import peasy.*;
 import superCAD.*;
+//import processing.opengl.*;
 
-int inputWidth = 640;
-int inputHeight = 480;
-int numFrames = 10;
-int writeNumStart = 0;
-int readNumStart = 0;
-int currentFrame = 0;
-int fps = 60;
-String readFilePath = "frames";
-String readFileName = "foo";
-String readFileType = "png";
+//**************************************
+boolean record3D = true; // records 3D rendering or just time-corrects original depth map
+int sW = 640;
+int sH = 480;
+float recordedFps = 30; //fps you shot at
+int numberOfFolders = 1;  //right now you must set this manually!
+String readFilePath = "data";
+String readFileName = "shot";
+String readFileType = "tga"; // record with tga for speed
 String writeFilePath = "render";
-String writeFileName = "render_"+readFileName;
-String writeFileType = "png";
-boolean recordObj = true;
-boolean recordFrame = false;
-float zscale = 1; //orig 3
+String writeFileName = "shot";
+String writeFileType = "tga";  // render with png to save space
+float zscale = 3; //orig 3, 1 looks better in 2D image but 3 looks better for OBJ
 float zskew = 10;
-PeasyCam cam;
-float[][] gray = new float[inputHeight][inputWidth];
-PImage frame;
+//**************************************
 
-/*
- Simple Kinect point-cloud demo v. 0.2
- 
- Henry Palonen <h@yty.net>
- 
- Using Daniel Shiffman's great processing-library for Kinect:
- http://www.google.com/url?sa=D&q=http://www.shiffman.net/2010/11/14/kinect-and-processing/&usg=AFQjCNH8kZWDMhFueeNBn5x97XoDR3v9oQ
- 
- Based on Kyle McDonalds Structure Light scanner:
- http://www.openprocessing.org/visuals/?visualID=1014
- 
- Using also SuperCAD for outputting the .obj - files: http://labelle.spacekit.ca/supercad/
- 
- History
- -------
- 17.11.2010 - 0.1 - First version, simple point-cloud working
- 18.11.2010 - 0.2 - Output to .obj for importing to Blender, gray-color for distance and small lines as output
- 
- */
+String readString = "";
+String writeString = "";
+int shotNumOrig = 1;
+int shotNum = shotNumOrig;
+int readFrameNumOrig = 1;
+int readFrameNum = readFrameNumOrig;
+int readFrameNumMax;
+int writeFrameNum = readFrameNum;
+int addFrameCounter = 0;
+int subtractFrameCounter = 0;
+
+PeasyCam cam;
+float[][] gray = new float[sH][sW];
+
+File dataFolder;
+String[] numFiles; 
+
+PImage img, buffer;
+
 
 void setup() {
-  size(inputWidth, inputHeight, P3D);
-  frameRate(fps);
-  smooth();
-  cam = new PeasyCam(this, width);
-  //initKinect();
+  reInit();
+  if (record3D) {
+    size(sW, sH, P3D);
+    cam = new PeasyCam(this, sW);
+  }
+  else {
+    size(sW, sH, P2D);
+  }
+  //smooth();
   stroke(255);
 }
 
-void draw () {
-  frame = loadImage(readFilePath + "/" + readFileName + (currentFrame+readNumStart) +"."+readFileType);
-  println(readFileName + (currentFrame+readNumStart) +"."+readFileType+ " loaded");  
+void reInit() {
+  readFrameNum = readFrameNumOrig;
+  writeFrameNum = readFrameNum;
+  addFrameCounter = 0;
+  subtractFrameCounter = 0;
+  countFolder();
+}
+
+void draw() {
   background(0);
+  if (shotNum<=numberOfFolders) {
+    if (readFrameNum<readFrameNumMax) {
+      readString = readFilePath + "/" + readFileName + shotNum + "/" + readFileName + shotNum + "_frame" + readFrameNum + "." + readFileType;
+      img = loadImage(readString);
+      if (record3D) {
+        objGenerate();
+      }
+      else {
+        image(img, 0, 0);
+      }
+      writeFile(1);
+      readFrameNum++;
+    } else {
+    if (shotNum==numberOfFolders) {
+      exit();
+    }
+    else {
+      shotNum++;
+      reInit();
+    }
+    }
+  }else {
+  exit();
+}
 
-  if (recordObj) {
-    beginRaw("superCAD.ObjFile", "render/"+ writeFileName+(currentFrame+writeNumStart)+".obj"); // Start recordObjing to the file
+}
+
+void countFolder() {
+  dataFolder = new File(sketchPath, readFilePath + "/" + readFileName + shotNum+"/");
+  numFiles = dataFolder.list();
+  readFrameNumMax = numFiles.length+1;
+}
+
+void writeFile(int reps) {
+  for (int i=0;i<reps;i++) {
+    writeString = writeFilePath + "/" + writeFileName + shotNum + "/" + writeFileName + shotNum + "_frame"+writeFrameNum+"."+writeFileType;
+
+    saveFrame(writeString);
+
+    if (record3D&&reps>1) {
+      objGenerate();
+    }
+    //println("written: " + writeString + diffReport);
+    writeFrameNum++;
   }
+}
 
-  for (int y = 0; y < inputHeight; y++) {
-    for (int x = 0; x < inputWidth; x++) {
+
+static final int gray(color value) { 
+  return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
+}
+
+void objGenerate() {
+  background(0);
+  if (record3D) {
+    objBegin();
+  }
+  buffer = img;
+  for (int y = 0; y < sH; y++) {
+    for (int x = 0; x < sW; x++) {
       // FIXME: this loses Z-resolution about tenfold ...
       //       -> should grab the real distance instead...
-      color argb = frame.pixels[y*width+x];
+      color argb = buffer.pixels[y*width+x];
       gray[y][x] = gray(argb);
     }
   }
 
   // Kyle McDonald's original source used here
-  translate(-inputWidth / 2, -inputHeight / 2);  
+  pushMatrix();
+  translate(-sW / 2, -sH / 2);  
   int step = 2;
-  for (int y = step; y < inputHeight; y += step) {
-    float planephase = 0.5 - (y - (inputHeight / 2)) / zskew;
-    for (int x = step; x < inputWidth; x += step)
+  for (int y = step; y < sH; y += step) {
+    float planephase = 0.5 - (y - (sH / 2)) / zskew;
+    for (int x = step; x < sW; x += step)
     {
       stroke(gray[y][x]);
       //point(x, y, (gray[y][x] - planephase) * zscale);
       line(x, y, (gray[y][x] - planephase) * zscale, x+1, y, (gray[y][x] - planephase) * zscale);
     }
   }
-
-  if (recordFrame) {
-    saveFrame("render/"+ writeFileName+(currentFrame+writeNumStart)+"."+writeFileType);
-    println(writeFileName+(currentFrame+writeNumStart)+"."+writeFileType+" saved");
-  }
-
-  if (recordObj) {
-    endRaw();
-    //recordObj = false; // Stop recordObjing to the file
-    println(writeFileName+(currentFrame+writeNumStart)+".obj saved");
-  }
-
-  if (currentFrame<numFrames-1) {
-    currentFrame++;
-  } 
-  else {
-    if (recordFrame||recordObj) {
-      println("render finished");
-      recordFrame=false;
-      recordObj=false;
-      stop();
-    }
-    currentFrame=0;
+  popMatrix();
+  if (record3D) {
+    objEnd();
   }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~
-
-static final int gray(color value) { 
-  return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
+void objBegin() {
+  beginRaw("superCAD.ObjFile", writeFilePath + "/" + writeFileName + shotNum + "/" + writeFileName + shotNum + "_frame"+writeFrameNum+"."+ "obj"); // Start recording to the file
 }
 
-//---
-
-void keyPressed() {
-  if (key == 'R' || key == 'r') { // Press R to save the file
-    recordObj = true;
-  }
-  if (key == ' ') {
-    currentFrame=0;
-    recordFrame = true;
-  }
-}
-
-//---
-
-void stop() {
-  super.stop();
-  exit();
+void objEnd() {
+  endRaw();
 }
 
 //~~~   END   ~~~
