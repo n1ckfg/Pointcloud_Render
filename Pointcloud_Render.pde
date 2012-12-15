@@ -3,31 +3,16 @@ import superCAD.*;
 //import processing.opengl.*;
 
 //**************************************
-boolean record3D = true; // records 3D rendering or just time-corrects original depth map
 int sW = 640;
-int sH = 480;
-float recordedFps = 30; //fps you shot at
-int numberOfFolders = 1;  //right now you must set this manually!
-String readFilePath = "data";
-String readFileName = "shot";
-String readFileType = "tga"; // record with tga for speed
-String writeFilePath = "render";
-String writeFileName = "shot";
-String writeFileType = "tga";  // render with png to save space
+int sH = 360;
+ArrayList photoArrayNames;
+int counter = 0;
+String fileName = "frame";
+String filePath = "render";
+String fileType = "obj";
 float zscale = 3; //orig 3, 1 looks better in 2D image but 3 looks better for OBJ
 float zskew = 10;
 //**************************************
-
-String readString = "";
-String writeString = "";
-int shotNumOrig = 1;
-int shotNum = shotNumOrig;
-int readFrameNumOrig = 1;
-int readFrameNum = readFrameNumOrig;
-int readFrameNumMax;
-int writeFrameNum = readFrameNum;
-int addFrameCounter = 0;
-int subtractFrameCounter = 0;
 
 PeasyCam cam;
 float[][] gray = new float[sH][sW];
@@ -37,77 +22,21 @@ String[] numFiles;
 
 PImage img, buffer;
 
-
 void setup() {
-  reInit();
-  if (record3D) {
+  countFrames();
     size(sW, sH, P3D);
     cam = new PeasyCam(this, sW);
-  }
-  else {
-    size(sW, sH, P2D);
-  }
-  //smooth();
-  stroke(255);
-}
 
-void reInit() {
-  readFrameNum = readFrameNumOrig;
-  writeFrameNum = readFrameNum;
-  addFrameCounter = 0;
-  subtractFrameCounter = 0;
-  countFolder();
+  stroke(255);
 }
 
 void draw() {
   background(0);
-  if (shotNum<=numberOfFolders) {
-    if (readFrameNum<readFrameNumMax) {
-      readString = readFilePath + "/" + readFileName + shotNum + "/" + readFileName + shotNum + "_frame" + readFrameNum + "." + readFileType;
-      img = loadImage(readString);
-      if (record3D) {
-        objGenerate();
-      }
-      else {
-        image(img, 0, 0);
-      }
-      writeFile(1);
-      readFrameNum++;
-    } else {
-    if (shotNum==numberOfFolders) {
-      exit();
-    }
-    else {
-      shotNum++;
-      reInit();
-    }
-    }
-  }else {
-  exit();
+  img = loadImage((String) photoArrayNames.get(counter));
+  objGenerate();
+  if(counter<photoArrayNames.size()) counter++;
+  if(counter==photoArrayNames.size()) exit();
 }
-
-}
-
-void countFolder() {
-  dataFolder = new File(sketchPath, readFilePath + "/" + readFileName + shotNum+"/");
-  numFiles = dataFolder.list();
-  readFrameNumMax = numFiles.length+1;
-}
-
-void writeFile(int reps) {
-  for (int i=0;i<reps;i++) {
-    writeString = writeFilePath + "/" + writeFileName + shotNum + "/" + writeFileName + shotNum + "_frame"+writeFrameNum+"."+writeFileType;
-
-    saveFrame(writeString);
-
-    if (record3D&&reps>1) {
-      objGenerate();
-    }
-    //println("written: " + writeString + diffReport);
-    writeFrameNum++;
-  }
-}
-
 
 static final int gray(color value) { 
   return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
@@ -115,9 +44,7 @@ static final int gray(color value) {
 
 void objGenerate() {
   background(0);
-  if (record3D) {
-    objBegin();
-  }
+  beginRaw("superCAD.ObjFile", filePath + "/" + fileName + zeroPadding(counter+1,photoArrayNames.size()) + "." + fileType); // Start recording to the file
   buffer = img;
   for (int y = 0; y < sH; y++) {
     for (int x = 0; x < sW; x++) {
@@ -142,17 +69,26 @@ void objGenerate() {
     }
   }
   popMatrix();
-  if (record3D) {
-    objEnd();
-  }
-}
-
-void objBegin() {
-  beginRaw("superCAD.ObjFile", writeFilePath + "/" + writeFileName + shotNum + "/" + writeFileName + shotNum + "_frame"+writeFrameNum+"."+ "obj"); // Start recording to the file
-}
-
-void objEnd() {
   endRaw();
+}
+
+void countFrames() {
+  photoArrayNames = new ArrayList();
+    try {
+        //loads a sequence of frames from a folder
+        File dataFolder = new File(sketchPath, "data/"); 
+        String[] allFiles = dataFolder.list();
+        for (int j=0;j<allFiles.length;j++) {
+          if (allFiles[j].toLowerCase().endsWith("png")||allFiles[j].toLowerCase().endsWith("jpg")||allFiles[j].toLowerCase().endsWith("jpeg")||allFiles[j].toLowerCase().endsWith("gif")||allFiles[j].toLowerCase().endsWith("tga")) {
+            photoArrayNames.add(allFiles[j]);
+          }
+        }
+    }catch(Exception e){ }
+  }
+
+String zeroPadding(int _val, int _maxVal){
+  String q = ""+_maxVal;
+  return nf(_val,q.length());
 }
 
 //~~~   END   ~~~
