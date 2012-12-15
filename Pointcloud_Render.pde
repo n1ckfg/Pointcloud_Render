@@ -15,7 +15,7 @@ float zskew = 10;
 //**************************************
 
 PeasyCam cam;
-float[][] gray = new float[sH][sW];
+float[][] gray;
 
 File dataFolder;
 String[] numFiles; 
@@ -24,52 +24,39 @@ PImage img, buffer;
 
 void setup() {
   countFrames();
-    size(sW, sH, P3D);
-    cam = new PeasyCam(this, sW);
-
+  img = loadImage((String) photoArrayNames.get(counter));
+  sW = img.width;
+  sH = img.height;
+  size(sW, sH, P3D);
+  cam = new PeasyCam(this, sW);
+  gray = new float[sH][sW];
   stroke(255);
 }
 
 void draw() {
   background(0);
   img = loadImage((String) photoArrayNames.get(counter));
-  objGenerate();
-  if(counter<photoArrayNames.size()) counter++;
-  if(counter==photoArrayNames.size()) exit();
-}
-
-static final int gray(color value) { 
-  return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
-}
-
-void objGenerate() {
-  background(0);
-  beginRaw("superCAD.ObjFile", filePath + "/" + fileName + zeroPadding(counter+1,photoArrayNames.size()) + "." + fileType); // Start recording to the file
-  buffer = img;
-  for (int y = 0; y < sH; y++) {
-    for (int x = 0; x < sW; x++) {
-      // FIXME: this loses Z-resolution about tenfold ...
-      //       -> should grab the real distance instead...
-      color argb = buffer.pixels[y*width+x];
-      gray[y][x] = gray(argb);
-    }
-  }
-
-  // Kyle McDonald's original source used here
+  objMain();
+  //~~~ 
   pushMatrix();
   translate(-sW / 2, -sH / 2);  
   int step = 2;
   for (int y = step; y < sH; y += step) {
     float planephase = 0.5 - (y - (sH / 2)) / zskew;
-    for (int x = step; x < sW; x += step)
-    {
+    for (int x = step; x < sW; x += step){
       stroke(gray[y][x]);
       //point(x, y, (gray[y][x] - planephase) * zscale);
       line(x, y, (gray[y][x] - planephase) * zscale, x+1, y, (gray[y][x] - planephase) * zscale);
     }
   }
   popMatrix();
-  endRaw();
+  //~~~
+  if(counter<photoArrayNames.size()) counter++;
+  if(counter==photoArrayNames.size()) exit();
+}
+
+static final int gray(color value) { 
+  return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
 }
 
 void countFrames() {
