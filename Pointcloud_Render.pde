@@ -5,26 +5,30 @@ import superCAD.*;
 //**************************************
 int sW = 640;
 int sH = 360;
-ArrayList photoArrayNames;
+ArrayList imgNames;
 int counter = 0;
-String fileName = "frame";
 String filePath = "render";
 String fileType = "obj";
 float zscale = 3; //orig 3, 1 looks better in 2D image but 3 looks better for OBJ
 float zskew = 10;
 //**************************************
+boolean firstRun = true;
 
 PeasyCam cam;
 float[][] gray;
 
-File dataFolder;
 String[] numFiles; 
 
 PImage img, buffer;
 
 void setup() {
-  countFrames();
-  img = loadImage((String) photoArrayNames.get(counter));
+  Settings settings = new Settings("settings.txt");
+  chooseFolderDialog();
+  while(firstRun){
+    try{
+      if(imgNames.size() > 0) img = loadImage((String) imgNames.get(counter));
+    }catch(Exception e){ }
+  }
   sW = img.width;
   sH = img.height;
   size(sW, sH, P3D);
@@ -35,7 +39,7 @@ void setup() {
 
 void draw() {
   background(0);
-  img = loadImage((String) photoArrayNames.get(counter));
+  img = loadImage((String) imgNames.get(counter));
   objMain();
   //~~~ 
   pushMatrix();
@@ -51,27 +55,13 @@ void draw() {
   }
   popMatrix();
   //~~~
-  if(counter<photoArrayNames.size()) counter++;
-  if(counter==photoArrayNames.size()) exit();
+  if(counter<imgNames.size()) counter++;
+  if(counter==imgNames.size()) exit();
 }
 
 static final int gray(color value) { 
   return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
 }
-
-void countFrames() {
-  photoArrayNames = new ArrayList();
-    try {
-        //loads a sequence of frames from a folder
-        File dataFolder = new File(sketchPath, "data/"); 
-        String[] allFiles = dataFolder.list();
-        for (int j=0;j<allFiles.length;j++) {
-          if (allFiles[j].toLowerCase().endsWith("png")||allFiles[j].toLowerCase().endsWith("jpg")||allFiles[j].toLowerCase().endsWith("jpeg")||allFiles[j].toLowerCase().endsWith("gif")||allFiles[j].toLowerCase().endsWith("tga")) {
-            photoArrayNames.add(allFiles[j]);
-          }
-        }
-    }catch(Exception e){ }
-  }
 
 String zeroPadding(int _val, int _maxVal){
   String q = ""+_maxVal;

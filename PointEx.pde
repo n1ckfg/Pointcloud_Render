@@ -41,7 +41,7 @@ void objEnd() {
   dataObj.add("# 0 faces, 0 texture coords");
   dataObj.add("");
   dataObj.add("# End of File");
-  dataObj.endSave(filePath + "/" + fileName + zeroPadding(counter+1,photoArrayNames.size()) + "." + fileType);
+  dataObj.endSave(filePath + "/" + fileName + zeroPadding(counter+1,imgNames.size()) + "." + fileType);
 }
 
 int countVertices(){
