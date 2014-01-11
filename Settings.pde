@@ -8,7 +8,7 @@ class Settings {
       settings.load(_s);
       for (int i=0;i<settings.data.length;i++) {
         //if (settings.data[i].equals("Maximum Width")) maxWidth = setInt(settings.data[i+1]);
-        //if (settings.data[i].equals("Output Filename")) fileName = setString(settings.data[i+1]);
+        if (settings.data[i].equals("Output Filename")) fileName = setString(settings.data[i+1]);
       }
     } 
     catch(Exception e) {
