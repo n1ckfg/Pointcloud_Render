@@ -8,8 +8,8 @@ int sH = 360;
 ArrayList imgNames;
 int counter = 0;
 String filePath = "render";
-String fileType = "obj";
-float zscale = 3; //orig 3, 1 looks better in 2D image but 3 looks better for OBJ
+String fileType = "obj"; //obj, ply, png...always lower case
+float zscale = 3; //orig 3, 1 looks better in 2D image but 3 looks better for OBJ, PLY
 float zskew = 10;
 //**************************************
 boolean firstRun = true;
@@ -23,6 +23,11 @@ PImage img, buffer;
 
 void setup() {
   Settings settings = new Settings("settings.txt");
+  if(fileType.equals("png")){
+    zscale = 1; //looks better if saving frames
+  }else if(fileType.equals("ply")||fileType.equals("obj")){
+    zscale = 3;
+  }
   chooseFolderDialog();
   while(firstRun){
     try{
@@ -55,7 +60,8 @@ void draw() {
   }
   popMatrix();
   //~~~
-  if(counter<imgNames.size()) counter++;
+  if(fileType.equals("png")) saveFrame(filePath + "/" + fileName + zeroPadding(counter+1,imgNames.size()) + "." + fileType);
+  if(counter<imgNames.size())counter++;
   if(counter==imgNames.size()) exit();
 }
 
