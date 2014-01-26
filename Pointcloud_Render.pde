@@ -62,7 +62,10 @@ void draw() {
   //~~~
   if(fileType.equals("png")) saveFrame(filePath + "/" + fileName + zeroPadding(counter+1,imgNames.size()) + "." + fileType);
   if(counter<imgNames.size())counter++;
-  if(counter==imgNames.size()) exit();
+  if(counter==imgNames.size()){
+    openAppFolderHandler();
+    exit();
+  }
 }
 
 static final int gray(color value) { 
