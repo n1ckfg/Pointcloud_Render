@@ -1,18 +1,15 @@
 class Settings {
-
-  Data settings;
-
+  
+  String[] data;
+  
   Settings(String _s) {
     try {
-      settings = new Data();
-      settings.load(_s);
-      for (int i=0;i<settings.data.length;i++) {
-        //if (settings.data[i].equals("Maximum Width")) maxWidth = setInt(settings.data[i+1]);
-        if (settings.data[i].equals("Output Filename")) fileName = setString(settings.data[i+1]);
-        if (settings.data[i].equals("Output Format (OBJ, PLY, PNG)")) fileType = setString(settings.data[i+1].toLowerCase());
+      data = loadStrings(_s);
+      for (int i=0;i<data.length;i++) {
+        if (data[i].equals("Output Filename")) fileName = setString(data[i+1]);
+        if (data[i].equals("Output Format (OBJ, PLY, PNG)")) fileType = setString(data[i+1].toLowerCase());
       }
-    } 
-    catch(Exception e) {
+    } catch(Exception e) {
       println("Couldn't load settings file. Using defaults.");
     }
   }
@@ -28,37 +25,11 @@ class Settings {
   boolean setBoolean(String _s) {
     return boolean(_s);
   }
-  
+
   String setString(String _s) {
     return ""+(_s);
   }
   
-  String[] setStringArray(String _s) {
-    int commaCounter=0;
-    for(int j=0;j<_s.length();j++){
-          if (_s.charAt(j)==char(',')){
-            commaCounter++;
-          }      
-    }
-    //println(commaCounter);
-    String[] buildArray = new String[commaCounter+1];
-    commaCounter=0;
-    for(int k=0;k<buildArray.length;k++){
-      buildArray[k] = "";
-    }
-    for (int i=0;i<_s.length();i++) {
-        if (_s.charAt(i)!=char(' ') && _s.charAt(i)!=char('(') && _s.charAt(i)!=char(')') && _s.charAt(i)!=char('{') && _s.charAt(i)!=char('}') && _s.charAt(i)!=char('[') && _s.charAt(i)!=char(']')) {
-          if (_s.charAt(i)==char(',')){
-            commaCounter++;
-          }else{
-            buildArray[commaCounter] += _s.charAt(i);
-         }
-       }
-     }
-     println(buildArray);
-     return buildArray;
-  }
-
   color setColor(String _s) {
     color endColor = color(0);
     int commaCounter=0;
@@ -109,4 +80,3 @@ class Settings {
       return endColor;
   }
 }
-

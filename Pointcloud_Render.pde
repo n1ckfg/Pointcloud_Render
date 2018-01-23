@@ -22,6 +22,7 @@ String[] numFiles;
 PImage img, buffer;
 
 void setup() {
+  size(50, 50, P3D);
   Settings settings = new Settings("settings.txt");
   if(fileType.equals("png")){
     zscale = 1; //looks better if saving frames
@@ -36,7 +37,7 @@ void setup() {
   }
   sW = img.width;
   sH = img.height;
-  size(sW, sH, P3D);
+  surface.setSize(sW, sH);
   cam = new PeasyCam(this, sW);
   gray = new float[sH][sW];
   stroke(255);
@@ -78,4 +79,3 @@ String zeroPadding(int _val, int _maxVal){
 }
 
 //~~~   END   ~~~
-
