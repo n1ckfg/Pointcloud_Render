@@ -41,7 +41,7 @@ void setup() {
 void draw() {
   background(0);
   img = loadImage((String) imgNames.get(counter));
-  objMain();
+  exportMain();
   //~~~ 
   //pushMatrix();
   //translate(-sW / 2, -sH / 2);  
@@ -66,7 +66,7 @@ void draw() {
   }
 }
 
-static final int gray(color value) { 
+static final int getGray(color value) { 
   return max((value >> 16) & 0xff, (value >> 8 ) & 0xff, value & 0xff);
 }
 

@@ -1,5 +1,5 @@
 Output Filename
 output
 
-Output Format (OBJ, PLY, PNG, ASC)
-OBJ
+Output Format (OBJ, PLY, PNG, ASC, BIN)
+BIN
