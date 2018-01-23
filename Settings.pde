@@ -7,7 +7,7 @@ class Settings {
       data = loadStrings(_s);
       for (int i=0;i<data.length;i++) {
         if (data[i].equals("Output Filename")) fileName = setString(data[i+1]);
-        if (data[i].equals("Output Format (OBJ, PLY, PNG)")) fileType = setString(data[i+1].toLowerCase());
+        if (data[i].equals("Output Format (OBJ, PLY, PNG, ASC)")) fileType = setString(data[i+1].toLowerCase());
       }
     } catch(Exception e) {
       println("Couldn't load settings file. Using defaults.");

@@ -9,7 +9,7 @@ File dataFolder;
 //choose folder dialog, Processing 2 version
 
 void chooseFolderDialog(){
-    if(firstRun) selectFolder("Choose a PNG, JPG, GIF, or TGA sequence.","chooseFolderCallback");  // Opens file chooser
+    if(firstRun) selectFolder("Choose a folder.","chooseFolderCallback");  // Opens file chooser
 }
 
 void chooseFolderCallback(File selection){

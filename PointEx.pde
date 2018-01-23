@@ -18,22 +18,25 @@ void objMain() {
       gray[y][x] = gray(argb);
       if(gray[y][x] > 0){
         vertCounter++;
-        if(fileType.equals("obj")){
+        if (fileType.toLowerCase().equals("obj")) {
           objVert(x,y);
-        }else if(fileType.equals("ply")){
+        } else if(fileType.toLowerCase().equals("ply")) {
           plyVert(x,y);
+        } else if(fileType.toLowerCase().equals("asc")) {
+          ascVert(x,y);
         }
       }
     }
   }
-  if(fileType.equals("obj")){
+  if(fileType.toLowerCase().equals("obj")){
     objHeader();
     compileVert();
     objFooter();
-  }else if(fileType.equals("ply")){
+  }else if(fileType.toLowerCase().equals("ply")){
     plyHeader();
     compileVert();
-    plyFooter();  
+  }else if(fileType.toLowerCase().equals("asc")){
+    compileVert();
   }
   dataMain.endSave(filePath + "/" + fileName + zeroPadding(counter+1,imgNames.size()) + "." + fileType);
 }
@@ -96,9 +99,8 @@ void plyVert(int x, int y){
   dataVert.add(x + " " + y + " " + gray[y][x] + " 192 192 192 255 "); //fixed vertex color for now. Trailing space is on purpose.
 }
 
-void plyFooter(){
-  //
-}
-
 //~~~
 
+void ascVert(int x, int y){
+  dataVert.add(x + " " + y + " " + gray[y][x]); //fixed vertex color for now. Trailing space is on purpose.
+}
