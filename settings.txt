@@ -2,4 +2,4 @@ Output Filename
 output
 
 Output Format (OBJ, PLY, PNG, ASC, BIN)
-BIN
+ply
